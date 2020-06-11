@@ -1,4 +1,12 @@
+This fork
+---------
+Forked because
+1) the original offer never pushed to public pypi
+2) we could have our own managed copy and to satisfy everything we put in 
+our local pypi has a repo is oul space behind it. 
+3) it is a good place to add our own get_image_dimensions(url) using the facilities in this package
 
+Forked by: Samantha Atkins
 
 ================
 get_image_size
