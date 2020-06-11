@@ -21,6 +21,11 @@ import json
 import os
 import io
 import struct
+import logging
+import requests
+import tempfile
+
+logger = logging.getLogger()
 
 FILE_UNKNOWN = "Sorry, don't know how to get size for this file."
 
@@ -63,7 +68,7 @@ class Image(collections.namedtuple('Image', image_fields)):
     def to_str_json(self, indent=None):
         return json.dumps(self._asdict(), indent=indent)
 
-
+    
 def get_image_size(file_path):
     """
     Return (width, height) for a given img file content - no external
@@ -72,6 +77,26 @@ def get_image_size(file_path):
     img = get_image_metadata(file_path)
     return (img.width, img.height)
 
+
+def get_image_dimensions(url):
+    res = {'width': None, 'height': None}
+    req = requests.get(url, stream=True)
+    try:
+        req.raise_for_status()
+    except HTTPError:
+        logger.warn('BAD IMAGE DOWNLOAD %s' % url)
+        raise Exception("Bad image download: %s" % url)
+    req.raw.decode_content = True
+    with tempfile.NamedTemporaryFile() as f:
+        try:
+            f.write(req.content)
+            w,h =  get_image_size(f.name)
+            res = {'width': w, 'height': h}
+
+        except Exception as e:
+            logger.warn('GENERIC IMAGE EXCEPTION %s - %s' % (url, str(e)))
+
+    return res
 
 def get_image_size_from_bytesio(input, size):
     """
